@@ -1,0 +1,18 @@
+protections:
+  entity-types:
+    - ENDER_PEARL
+    - ARROW
+    - SPECTRAL_ARROW
+    - TRIDENT
+    - WIND_CHARGE
+    - FIREWORK_ROCKET
+    - ARMOR_STAND
+    - ITEM_FRAME
+    - GLOW_ITEM_FRAME
+  protect-living: true
+  protect-projectiles: [ARROW, SPECTRAL_ARROW, TRIDENT, WIND_CHARGE]
+  protect-named-entities: true
+  protect-custom-name-patterns: ['(?i)hologram', '(?i)npc', '(?i)citizens']
+  protect-citizens-npcs: true
+  protect-armor-stands: true
+  protect-entities-with-metadata: [NPC, hologram, Hologram, CitizensNPC]
