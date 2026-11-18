@@ -1,0 +1,18 @@
+name: ClearlagMC
+version: 1.0.0
+main: com.flovex.clearlag.ClearlagMC
+api-version: '1.21'
+author: FlovexSMP
+description: Configurable, protection-first entity cleanup for Paper and Spigot.
+commands:
+  clearlag:
+    description: Manage ClearLag cleanup and timer.
+    usage: /clearlag [timer|clear|reload|entities on|entities off|toggle]
+    aliases: [clag]
+permissions:
+  clearlag.admin:
+    description: Allows full ClearLag administration.
+    default: op
+  clearlag.command:
+    description: Allows viewing timer status and help.
+    default: true
