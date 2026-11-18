@@ -5,11 +5,17 @@ api-version: '1.21'
 author: FlovexSMP
 description: Configurable, protection-first entity cleanup for Paper and Spigot.
 commands:
+  clearlagtoggle:
+    description: Toggle personal ClearLag timer notifications.
+    usage: /clearlagtoggle
   clearlag:
     description: Manage ClearLag cleanup and timer.
     usage: /clearlag [timer|clear|reload|entities on|entities off|toggle]
     aliases: [clag]
 permissions:
+  clearlag.toggle:
+    description: Allows toggling personal timer notifications.
+    default: true
   clearlag.admin:
     description: Allows full ClearLag administration.
     default: op
