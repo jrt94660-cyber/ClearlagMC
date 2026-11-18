@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.regex.Matcher;
@@ -28,6 +29,7 @@ public final class ClearlagMC extends JavaPlugin {
     private List<Integer> warningSeconds = new ArrayList<>();
     private List<String> protectedTypes = new ArrayList<>(), protectedProjectileTypes = new ArrayList<>(), protectedMetadata = new ArrayList<>();
     private List<Pattern> protectedNamePatterns = new ArrayList<>();
+    private final java.util.Map<UUID, Boolean> timerMessageToggles = new java.util.HashMap<>();
 
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -38,6 +40,8 @@ public final class ClearlagMC extends JavaPlugin {
         loadAll();
         if (!pluginEnabled) { getLogger().info("Disabled by config.yml (plugin.enabled=false)."); return; }
         if (getCommand("clearlag") != null) getCommand("clearlag").setExecutor(this);
+        if (getCommand("clearlagtoggle") != null) getCommand("clearlagtoggle").setExecutor(this);
+        loadPlayerToggles();
         if (timerEnabled) startTimer();
         getLogger().info("ClearlagMC enabled. Entity removal=" + entitiesEnabled + ", timer=" + timerEnabled + ". No startup cleanup performed.");
     }
@@ -74,7 +78,7 @@ public final class ClearlagMC extends JavaPlugin {
             if (secondsRemaining <= 0) { performCleanup(true); secondsRemaining = intervalSeconds; return; }
             if (warningSeconds.contains(secondsRemaining)) {
                 String key = entitiesEnabled ? "messages.warning" : "messages.warning-disabled";
-                broadcast(message(key).replace("%seconds%", String.valueOf(secondsRemaining)));
+                broadcastTimerMessage(key, message(key).replace("%seconds%", String.valueOf(secondsRemaining)));
             }
             secondsRemaining--;
         }, 0L, 20L);
@@ -91,7 +95,7 @@ public final class ClearlagMC extends JavaPlugin {
             entity.remove(); removed++;
         }
         logCleanup(removed,skipped);
-        if (broadcastResult) broadcast(message("messages.clear-broadcast").replace("%removed%",String.valueOf(removed)));
+        if (broadcastResult) broadcastConfigured("messages.clear-broadcast", message("messages.clear-broadcast").replace("%removed%",String.valueOf(removed)));
         return new CleanupResult(removed,skipped);
     }
     private boolean isProtected(Entity entity) {
@@ -138,10 +142,17 @@ public final class ClearlagMC extends JavaPlugin {
     }
     private void send(CommandSender s,String text){s.sendMessage(message("messages.prefix")+text);}
     private void broadcast(String text){Bukkit.getServer().broadcastMessage(message("messages.prefix")+text);}
+    private String delivery(String key, String fallback) { String mode=yaml("messages.yml").getString("delivery."+key,fallback).toLowerCase(Locale.ROOT); return (mode.equals("chat")||mode.equals("title")||mode.equals("actionbar"))?mode:fallback; }
+    private void sendDelivered(Player player,String text,String mode){if(mode.equals("title"))player.sendTitle(text,"",5,40,10);else if(mode.equals("actionbar"))player.sendActionBar(text);else player.sendMessage(message("messages.prefix")+text);}
+    private void broadcastTimerMessage(String key,String text){String mode=delivery(key.substring("messages.".length()),"actionbar");for(Player player:Bukkit.getOnlinePlayers())if(timerMessageToggles.getOrDefault(player.getUniqueId(),true))sendDelivered(player,text,mode);}
+    private void broadcastConfigured(String key,String text){String mode=delivery(key.substring("messages.".length()),"chat");for(Player player:Bukkit.getOnlinePlayers())sendDelivered(player,text,mode);}
+    private void loadPlayerToggles(){var file=yaml("settings/player-toggles.yml");timerMessageToggles.clear();for(String id:file.getKeys(false)){try{timerMessageToggles.put(UUID.fromString(id),file.getBoolean(id,true));}catch(IllegalArgumentException ignored){}}}
+    private void savePlayerToggle(UUID id,boolean enabled){var file=yaml("settings/player-toggles.yml");file.set(id.toString(),enabled);try{file.save(getDataFolder().toPath().resolve("settings/player-toggles.yml").toFile());}catch(IOException e){getLogger().warning("Could not save player timer toggle: "+e.getMessage());}}
     private boolean admin(CommandSender s){if(s.hasPermission("clearlag.admin"))return true;send(s,message("messages.no-permission"));return false;}
 
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
         if(!pluginEnabled){send(sender,message("messages.disabled"));return true;}
+        if(command.getName().equalsIgnoreCase("clearlagtoggle")){if(!(sender instanceof Player player)){send(sender,message("messages.toggle-player-only"));return true;}boolean enabled=!timerMessageToggles.getOrDefault(player.getUniqueId(),true);timerMessageToggles.put(player.getUniqueId(),enabled);savePlayerToggle(player.getUniqueId(),enabled);send(player,message(enabled?"messages.toggle-on":"messages.toggle-off"));return true;}
         if(args.length==0){if(!sender.hasPermission("clearlag.command")){send(sender,message("messages.no-permission"));return true;}send(sender,message("messages.usage"));return true;}
         switch(args[0].toLowerCase(Locale.ROOT)){
             case "timer" -> {
