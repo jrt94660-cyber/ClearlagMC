@@ -1,0 +1,4 @@
+timer:
+  enabled: true
+  interval-seconds: 600
+  warnings-seconds: [60, 30, 10]
