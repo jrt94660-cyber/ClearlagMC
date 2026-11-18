@@ -125,7 +125,7 @@ public final class ClearlagMC extends JavaPlugin {
     private String message(String key) { return color(yaml("messages.yml").getString(key,key)); }
     private String color(String s) {
         Matcher m=Pattern.compile("&#([A-Fa-f0-9]{6})").matcher(s); StringBuffer out=new StringBuffer();
-        while(m.find()){ String hex=m.group(1); StringBuilder legacy=new StringBuilder("§x"); for(char c:hex.toCharArray()) legacy.append('§').append(c); m.appendReplacement(out,Matcher.quoteReplacement(legacy.toString()); }
+        while(m.find()){ String hex=m.group(1); StringBuilder legacy=new StringBuilder("§x"); for(char c:hex.toCharArray()) legacy.append('§').append(c); m.appendReplacement(out,Matcher.quoteReplacement(legacy.toString())); }
         m.appendTail(out); return ChatColor.translateAlternateColorCodes('&',out.toString());
     }
     private void send(CommandSender s,String text){s.sendMessage(message("messages.prefix")+text);}
