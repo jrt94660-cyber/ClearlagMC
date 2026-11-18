@@ -16,3 +16,13 @@ messages:
   warning: '&#FFD24D&lWARNING &8» &7Entities will be cleared in &#FF5555%seconds% &7seconds!'
   warning-disabled: '&#FFD24D&lWARNING &8» &7Cleanup in &#FF5555%seconds% &7seconds. &8(&cRemoval disabled&8)'
   clear-broadcast: '&#55FF55&lCLEARED &8» &7Removed &#FFFFFF%removed% &7entities.
+  toggle-on: '&#55FF55ClearLag timer notifications are now enabled.'
+  toggle-off: '&#FF5555ClearLag timer notifications are now disabled.'
+  toggle-player-only: '&#FF5555Only players can use this command.'
+
+# Choose chat, title, or actionbar per message type.
+# Timer warning delivery defaults to actionbar and each setting is independent.
+delivery:
+  warning: actionbar
+  warning-disabled: actionbar
+  clear-broadcast: chat
