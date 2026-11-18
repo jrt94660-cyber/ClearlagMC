@@ -122,7 +122,15 @@ public final class ClearlagMC extends JavaPlugin {
             Files.writeString(file,"["+java.time.LocalTime.now()+"] removed="+removed+" protected/skipped="+skipped+System.lineSeparator(),StandardOpenOption.CREATE,StandardOpenOption.APPEND);
         } catch(IOException e) { getLogger().warning("Log write failed: "+e.getMessage()); }
     }
-    private String message(String key) { return color(yaml("messages.yml").getString(key,key)); }
+    private String message(String key) {
+        var messages = yaml("messages.yml");
+        String normalized = key.startsWith("messages.") ? key.substring("messages.".length()) : key;
+        String value = messages.getString(key);
+        if (value == null) value = messages.getString("messages." + normalized);
+        if (value == null) value = messages.getString(normalized);
+        // Never leak missing YAML paths into chat as raw key names.
+        return color(value == null ? "" : value);
+    }
     private String color(String s) {
         Matcher m=Pattern.compile("&#([A-Fa-f0-9]{6})").matcher(s); StringBuffer out=new StringBuffer();
         while(m.find()){ String hex=m.group(1); StringBuilder legacy=new StringBuilder("§x"); for(char c:hex.toCharArray()) legacy.append('§').append(c); m.appendReplacement(out,Matcher.quoteReplacement(legacy.toString())); }
